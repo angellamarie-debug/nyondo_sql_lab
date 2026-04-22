@@ -98,3 +98,92 @@ products.forEach(p => insertProduct.run(...p));
   }
 //screenshot
 screenshots_folder/select screenshot.png
+
+//TASK 2
+//Querry A
+console.log('\n--- Query A: All products ---');
+db.prepare('SELECT * FROM products').all().forEach(r => {
+  console.log(`  [${r.id}] ${r.name.padEnd(20)}  cost=${String(r.cost_price.toLocaleString()).padStart(8)}  sell=${String(r.sell_price.toLocaleString()).padStart(8)}  stock=${r.stock}`);
+});
+
+//querry A output
+--- Query A: All products ---
+  [1] Cement (bag)          cost=  28,000  sell=  35,000  stock=500
+  [2] Iron Sheet 3m         cost=  85,000  sell= 110,000  stock=120
+  [3] Paint 5L              cost=  45,000  sell=  60,000  stock=80
+  [4] Nails 1kg             cost=   8,000  sell=  12,000  stock=300
+  [5] Timber 2x4            cost=  18,000  sell=  25,000  stock=60
+
+//  Querry B
+console.log('\n--- Query B: Name and sell price only ---');
+db.prepare('SELECT id, name, sell_price FROM products').all().forEach(r => {
+  console.log(`  [${r.id}] ${r.name.padEnd(20)}  UGX ${r.sell_price.toLocaleString()}`);
+ });
+
+ //querry B output
+ Query B: Name and sell price only ---
+  [1] Cement (bag)          UGX 35,000
+  [2] Iron Sheet 3m         UGX 110,000
+  [3] Paint 5L              UGX 60,000
+  [4] Nails 1kg             UGX 12,000
+  [5] Timber 2x4            UGX 25,000
+
+//  Querry C
+console.log('\n--- Query C: Product with id = 3 ---');
+const one = db.prepare('SELECT * FROM products WHERE id = 3').get();
+console.log(`  Name:       ${one.name}`);
+console.log(`  Cost price: UGX ${one.cost_price.toLocaleString()}`);
+console.log(`  Sell price: UGX ${one.sell_price.toLocaleString()}`);
+console.log(`  Stock:      ${one.stock} units`);
+
+//querry C output
+Query C: Product with id = 3 ---
+  Name:       Paint 5L
+  Cost price: UGX 45,000
+  Sell price: UGX 60,000
+  Stock:      80 units
+
+//   Querry D
+console.log("\n--- Query D: Products with 'sheet' in the name ---");
+db.prepare("SELECT * FROM products WHERE name LIKE '%sheet%'").all()
+   .forEach(r => console.log(`  [${r.id}] ${r.name}`));
+
+//querry D output
+ Query D: Products with 'sheet' in the name ---
+  [2] Iron Sheet 3m
+
+//Querry E
+console.log('\n--- Query E: Products sorted by sell price (highest first) ---');
+db.prepare('SELECT name, sell_price FROM products ORDER BY sell_price DESC').all()
+.forEach(r => console.log(`  ${r.name.padEnd(20)}  UGX ${r.sell_price.toLocaleString()}`));
+
+//querry E output
+ Query E: Products sorted by sell price (highest first) ---
+  Iron Sheet 3m         UGX 110,000
+  Paint 5L              UGX 60,000
+  Cement (bag)          UGX 35,000
+  Timber 2x4            UGX 25,000
+  Nails 1kg             UGX 12,000
+
+//querry F
+console.log('\n--- Query F: two most expensive products ---');
+db.prepare('SELECT id, name, sell_price FROM products ORDER BY sell_price DESC LIMIT 2').all()
+.forEach(r => console.log(`  [${r.id}] ${r.name.padEnd(20)}  UGX ${r.sell_price.toLocaleString()}`));
+
+//querry F output
+Query F: two most expensive products ---
+  [2] Iron Sheet 3m         UGX 110,000
+  [3] Paint 5L              UGX 60,000
+
+//query G
+console.log('\n--- Query G: Update the price of Cement (id=1) to 38,000 ---');
+db.prepare('UPDATE products SET sell_price = 38000 WHERE id = 1').run();
+const cement = db.prepare('SELECT * FROM products WHERE id = 1').get();
+console.log(`  Updated price of ${cement.name} is now UGX ${cement.sell_price.toLocaleString()}`);
+
+//query G output
+Query G: Update the price of Cement (id=1) to 38,000 ---
+  Updated price of Cement (bag) is now UGX 38,000
+
+  //task 2 screenshot
+ screenshots_folder/task2 screenshot.png 
