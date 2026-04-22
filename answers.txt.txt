@@ -1,0 +1,100 @@
+NANSUBUGA MARIE                                  22nd April,2026
+ 
+ //TASK ONE
+//part 1-set up code
+const { DatabaseSync } = require('node:sqlite');
+const fs = require('fs');
+
+const DB_FILE = 'nyondo_stock.db';
+
+if (fs.existsSync(DB_FILE)) {
+  fs.unlinkSync(DB_FILE);
+  console.log('Removed old database.');
+}
+
+const db = new DatabaseSync(DB_FILE);
+
+//part 2-create table statement
+db.exec(`
+  CREATE TABLE products (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT    NOT NULL,
+    description TEXT,
+    cost_price  REAL    NOT NULL,
+    sell_price  REAL    NOT NULL,
+    stock       INTEGER DEFAULT 0
+  );
+
+  CREATE TABLE users (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT    NOT NULL UNIQUE,
+    password TEXT    NOT NULL,
+    role     TEXT    DEFAULT 'attendant'
+  );
+
+  CREATE TABLE orders (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER,
+    product_id INTEGER,
+    quantity   INTEGER,
+    total      REAL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+//part 3-Insert items
+const insertProduct = db.prepare(
+  'INSERT INTO products (name, description, cost_price, sell_price, stock) VALUES (?, ?, ?, ?, ?)'
+);
+const products = [
+  ['Cement (bag)', 'Portland cement 50kg bag',28000, 35000, 500],
+  ['Iron Sheet 3m', 'Gauge 30 roofing sheet 3m long', 85000, 110000, 120],
+  ['Paint 5L', 'Exterior wall paint white 5L', 45000, 60000, 80],
+  ['Nails 1kg', 'Common wire nails 1kg pack', 8000, 12000, 300],
+  ['Timber 2x4', 'Pine timber plank 2x4 per metre', 18000, 25000, 60],
+];
+products.forEach(p => insertProduct.run(...p));
+
+//part 4-output from SELECT*
+[Object: null prototype] {
+    id: 1,
+    name: 'Cement (bag)',
+    description: 'Portland cement 50kg bag',
+    cost_price: 28000,
+    sell_price: 35000,
+    stock: 500
+  },
+  [Object: null prototype] {
+    id: 2,
+    name: 'Iron Sheet 3m',
+    description: 'Gauge 30 roofing sheet 3m long',
+    cost_price: 85000,
+    sell_price: 110000,
+    stock: 120
+  },
+  [Object: null prototype] {
+    id: 3,
+    name: 'Paint 5L',
+    description: 'Exterior wall paint white 5L',
+    cost_price: 45000,
+    sell_price: 60000,
+    stock: 80
+  },
+  [Object: null prototype] {
+    id: 4,
+    name: 'Nails 1kg',
+    description: 'Common wire nails 1kg pack',
+    cost_price: 8000,
+    sell_price: 12000,
+    stock: 300
+  },
+  [Object: null prototype] {
+    id: 5,
+    name: 'Timber 2x4',
+    description: 'Pine timber plank 2x4 per metre',
+    cost_price: 18000,
+    sell_price: 25000,
+    stock: 60
+  }
+//screenshot
+screenshots_folder/select screenshot.png
