@@ -66,7 +66,7 @@ users.forEach(u => insertUser.run(...u));
 const rows = db.prepare('SELECT * FROM products').all();
 console.log(rows);
 
-db.close();
+
 
 // console.log('==================================================');
 // console.log('  nyondo_stock.db created successfully!');
@@ -74,6 +74,26 @@ db.close();
 // console.log();
 // console.log('Tables created:   products | users | orders');
 // console.log('Products seeded:  7 products');
-// console.log('Users seeded:     4 users (admin, fatuma, wasswa, aisha)');
+ console.log('Users seeded:     4 users (admin, fatuma, wasswa, aisha)');
 // console.log();
 // console.log("Run 'node 01_explore.js' to start exploring.");
+
+// db.exec(`
+//   CREATE TABLE IF NOT EXISTS users (
+//     id        INTEGER PRIMARY KEY AUTOINCREMENT,
+//     username  TEXT    NOT NULL,
+//     password  TEXT    NOT NULL,
+//     role      TEXT DEFAULT 'attendant',
+  
+//   )
+// `);
+
+//   //insert or ignore into users (username,password,roles)values
+//     // INSERT OR IGNORE INTO users(id,username,password,role) VALUES
+//     (1, 'admin', 'admin123' , 'admin'),
+//     (2, 'fatuma', 'pass456' , 'attendant'),
+//     (3, 'wasswa' , 'pass789' , 'manager')
+ 
+
+
+  // db.close();

