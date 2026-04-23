@@ -294,3 +294,46 @@ screenshots_folder/task3_attack3.png
     -> Timber 2x4             cost=  18,000  sell=  25,000
 Attack 4 worked because union select combines tables and steals usernames and passwords
 screenshots_folder/task3_attack4.png
+
+
+//TASK 4 - FIX THE VULNERABILITIES
+//Whole secure code
+const { DatabaseSync } = require('node:sqlite');
+const db = new DatabaseSync('nyondo_stock.db');
+
+// safe search
+function searchProductSafe(name) {
+ const query = `SELECT id, name, cost_price, sell_price, stock FROM products WHERE name LIKE ?`;
+ const rows =db.prepare(query).all(`%${name}%`);
+ console.log('Result:', rows);
+  return rows;
+}
+
+
+// safe login
+function loginSafe(username,password){
+      const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+      const row = db.prepare(query).get(username,password);
+
+      console.log('Result:', row);
+      return row;
+
+}
+
+//output
+Result: []
+Test 1: []
+Result: []
+Test 2: []
+Result: undefined
+Test 3: undefined
+Result: undefined
+Test 4: undefined
+
+//explanation
+Parameterized queries use placeholders(?) therefore malicious input can not change the meaning
+of the query.The user input is treated as data rather than as part pf SQL command.Injection attacks
+fail and return no resluts.
+
+//screenshot
+screenshots_folder/task4.png
