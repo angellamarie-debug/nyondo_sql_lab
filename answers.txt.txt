@@ -1,6 +1,11 @@
-NANSUBUGA MARIE                                  22nd April,2026
- 
- //TASK ONE
+ NAME: NANSUBUGA MARIE                                  
+ TRACK: JAVASCRIPT
+ DATE: 23rd April,2026
+GITHUB: https://github.com/angellamarie-debug/nyondo_sql_lab
+
+
+//TASK ONE- DATABASE SET UP
+==================================================
 //part 1-set up code
 const { DatabaseSync } = require('node:sqlite');
 const fs = require('fs');
@@ -13,6 +18,7 @@ if (fs.existsSync(DB_FILE)) {
 }
 
 const db = new DatabaseSync(DB_FILE);
+
 
 //part 2-create table statement
 db.exec(`
@@ -99,7 +105,8 @@ products.forEach(p => insertProduct.run(...p));
 //screenshot
 screenshots_folder/select screenshot.png
 
-//TASK 2
+//TASK 2 - QUERRIES
+======================================================
 //Query A
 console.log('\n--- Query A: All products ---');
 db.prepare('SELECT * FROM products').all().forEach(r => {
@@ -188,7 +195,8 @@ Query G: Update the price of Cement (id=1) to 38,000 ---
   //task 2 screenshot
  screenshots_folder/task2 screenshot.png 
 
-//TASK 3
+//TASK 3 - ATTACKS
+==========================================================
 //full vulnerable.js
 const { DatabaseSync } = require('node:sqlite');
 const db = new DatabaseSync('nyondo_stock.db');
